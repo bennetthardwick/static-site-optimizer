@@ -1,5 +1,5 @@
 [package]
-name = "convert-to-amp"
+name = "static-site-to-amp"
 version = "0.1.0"
 authors = ["Bennett Hardwick <me@bennetthardwick.com>"]
 edition = "2018"

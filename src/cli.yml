@@ -1,7 +1,7 @@
-name: My App
+name: Static Site To Amp
 version: "0.1"
 author: "Bennett Hardwick <me@bennetthardwick.com>"
-about: Does stuff
+about: Converts a static site into a static site + amp pages
 args:
   - input:
       help: The directory of your static site
