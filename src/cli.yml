@@ -1,0 +1,23 @@
+name: My App
+version: "0.1"
+author: "Bennett Hardwick <me@bennetthardwick.com>"
+about: Does stuff
+args:
+  - input:
+      help: The directory of your static site
+      required: true
+      multiple: false
+  - base:
+      help: Sets the base URL
+      required: true
+      multiple: false
+      short: b
+      long: base
+      takes_value: true
+  - output:
+      help: Sets the output directory
+      short: o
+      long: output
+      required: true
+      multiple: false
+      takes_value: true
