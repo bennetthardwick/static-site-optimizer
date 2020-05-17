@@ -188,19 +188,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                             buf
                         });
 
-                let meta = fs::metadata(&path_buf).unwrap();
+                let meta = fs::metadata(&path_buf)?;
 
                 if meta.is_dir() {
                     existing_count += 1;
-                    fs::create_dir(&output_path_buf).unwrap();
+                    fs::create_dir(&output_path_buf)?;
 
-                    let dir = fs::read_dir(&path_buf).unwrap();
+                    let dir = fs::read_dir(&path_buf)?;
 
                     for entry in dir {
                         let mut new_path = path.clone();
                         new_path.push(Rc::new(String::from(
-                            entry
-                                .unwrap()
+                            entry?
                                 .file_name()
                                 .to_str()
                                 .expect("file contained non-unicode characters"),
@@ -224,14 +223,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         }
 
                         let contents = {
-                            let file = fs::read_to_string(&path_buf).unwrap();
+                            let file = fs::read_to_string(&path_buf)?;
                             fixup_html(
                                 &file,
                                 &format!("{}/{}/", &base, &url.to_str().unwrap()),
                                 base,
                                 &input.to_str().unwrap(),
-                            )
-                            .unwrap()
+                            )?
                         };
 
                         let amp_buf = if output_path_buf
@@ -239,11 +237,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                             .map(|x| x == "index.html")
                             .unwrap_or(false)
                         {
-                            fs::copy(path_buf, &output_path_buf).unwrap();
+                            fs::copy(path_buf, &output_path_buf)?;
 
                             let mut output_path_buf = output_path_buf.clone();
                             output_path_buf.pop();
-                            output_path_buf.push("amp.html");
+                            output_path_buf.push("amp");
+
+                            fs::create_dir(&output_path_buf)?;
+
+                            output_path_buf.push("index.html");
                             output_path_buf
                         } else {
                             let stem = output_path_buf.file_stem().expect("File had no name");
@@ -251,22 +253,26 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                             output_path_buf.pop();
                             output_path_buf.push(stem);
 
-                            fs::create_dir(&output_path_buf).unwrap();
+                            fs::create_dir(&output_path_buf)?;
 
                             output_path_buf.push("index.html");
 
-                            fs::copy(&path_buf, &output_path_buf).unwrap();
+                            fs::copy(&path_buf, &output_path_buf)?;
 
                             output_path_buf.pop();
-                            output_path_buf.push("amp.html");
+                            output_path_buf.push("amp");
+
+                            fs::create_dir(&output_path_buf)?;
+
+                            output_path_buf.push("index.html");
                             output_path_buf
                         };
 
                         page_count += 1;
-                        fs::write(amp_buf, contents).unwrap();
+                        fs::write(amp_buf, contents)?;
                     } else {
                         existing_count += 1;
-                        fs::copy(path_buf, output_path_buf).unwrap();
+                        fs::copy(path_buf, output_path_buf)?;
                     }
                 }
             }
