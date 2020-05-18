@@ -1,6 +1,6 @@
-# static-site-to-amp
+# static-site-optimizer
 
-Convert a static site into a static site + amp
+An optimizer for your static site. Inline css, automatically generate amp pages.
 
 ## Usage
 
@@ -10,14 +10,16 @@ After building your site (using [zola](https://www.getzola.org/) for example), p
 cargo run --release -- \
   <static site folder> \
   --base-url https://<site base url> \
-  --outdir <output directory>
+  --outdir <output directory> \
+  --amp \
+  --inline-styles
 ```
 
 After the command runs upload your output directory to your server.
 
 ## Features
 
-Note: this is still very WIP. I'm fixing issues as I see Google complain about them.
+Note: this is still very WIP. I'm fixing AMP issues as I see Google complain about them.
 
 - [x] amp boilerplate
 - [x] collapse styles
