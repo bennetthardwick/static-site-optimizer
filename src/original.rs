@@ -24,7 +24,11 @@ pub(crate) fn fixup_original_html(
     {
         let add_amp_link = element!("head", |el| {
             el.append(
-                &format!(r#"<link rel="amphtml" href="{}/amp/">"#, canonical),
+                &format!(
+                    r#"<link rel="amphtml" href="{}{}amp/">"#,
+                    if canonical.ends_with("/") { "" } else { "/" },
+                    canonical
+                ),
                 ContentType::Html,
             );
 
