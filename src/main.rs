@@ -14,6 +14,16 @@ enum Message {
 mod amp;
 mod original;
 
+fn minify_html(file: String) -> Result<String, Box<dyn std::error::Error>> {
+    let mut minifier = html_minifier::HTMLMinifier::new();
+    minifier.digest(&file)?;
+    Ok(minifier.get_html())
+}
+
+fn pass_html(file: String) -> Result<String, Box<dyn std::error::Error>> {
+    Ok(file)
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let yaml = load_yaml!("cli.yml");
     let matches = App::from_yaml(yaml).get_matches();
@@ -24,7 +34,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let input = matches.value_of("input").unwrap();
     let input = Rc::new(OsString::from(input));
 
-    let base = matches.value_of("base").unwrap();
+    let mut base: String = matches.value_of("base").unwrap().into();
+    if !base.ends_with("/") {
+        base.push('/');
+    }
 
     if let Ok(meta) = fs::metadata(output.as_os_str()) {
         if meta.is_dir() {
@@ -35,6 +48,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     let is_amp = matches.is_present("amp");
+    let should_minify = matches.is_present("minify_html");
+
+    let minify_fn: &dyn Fn(String) -> Result<String, Box<dyn std::error::Error>> = if should_minify
+    {
+        &minify_html
+    } else {
+        &pass_html
+    };
 
     let options = original::Options {
         inline_styles: matches.is_present("inline_styles"),
@@ -103,19 +124,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                             let (amp, original) = {
                                 let file = fs::read_to_string(&path_buf)?;
-                                let canonical = format!("{}/{}/", &base, &url.to_str().unwrap());
+                                let mut canonical = format!("{}{}", &base, &url.to_str().unwrap());
+
+                                if !canonical.ends_with("/") {
+                                    canonical.push('/');
+                                }
 
                                 (
                                     amp::fixup_amp_html(
                                         &file,
                                         &canonical,
-                                        base,
+                                        &base,
                                         &input.to_str().unwrap(),
                                     )?,
                                     original::fixup_original_html(
                                         &file,
                                         &canonical,
-                                        base,
+                                        &base,
                                         &input.to_str().unwrap(),
                                         &options,
                                     )?,
@@ -127,7 +152,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 .map(|x| x == "index.html")
                                 .unwrap_or(false)
                             {
-                                fs::write(&output_path_buf, original)?;
+                                fs::write(&output_path_buf, minify_fn(original)?)?;
 
                                 let mut output_path_buf = output_path_buf.clone();
                                 output_path_buf.pop();
@@ -147,7 +172,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                                 output_path_buf.push("index.html");
 
-                                fs::write(&output_path_buf, original)?;
+                                fs::write(&output_path_buf, minify_fn(original)?)?;
 
                                 output_path_buf.pop();
                                 output_path_buf.push("amp");
@@ -159,19 +184,24 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                             };
 
                             page_count += 1;
-                            fs::write(amp_buf, amp)?;
+                            fs::write(amp_buf, minify_fn(amp)?)?;
                         } else {
                             let url: PathBuf = path_buf.strip_prefix(&input.as_os_str())?.into();
-                            let canonical = format!("{}/{}/", &base, &url.to_str().unwrap());
+                            let mut canonical = format!("{}{}", &base, &url.to_str().unwrap());
+
+                            if !canonical.ends_with("/") {
+                                canonical.push('/');
+                            }
+
                             let file = fs::read_to_string(&path_buf)?;
                             let file = original::fixup_original_html(
                                 &file,
                                 &canonical,
-                                base,
+                                &base,
                                 &input.to_str().unwrap(),
                                 &options,
                             )?;
-                            fs::write(&output_path_buf, file)?;
+                            fs::write(&output_path_buf, minify_fn(file)?)?;
                         }
                     } else {
                         existing_count += 1;

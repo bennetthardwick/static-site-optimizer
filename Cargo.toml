@@ -9,3 +9,4 @@ edition = "2018"
 [dependencies]
 clap = { version = "2.33.0", features = [ "yaml" ] }
 lol_html = "0.2.0"
+html-minifier = "1.2.1"

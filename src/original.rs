@@ -26,8 +26,8 @@ pub(crate) fn fixup_original_html(
             el.append(
                 &format!(
                     r#"<link rel="amphtml" href="{}{}amp/">"#,
-                    if canonical.ends_with("/") { "" } else { "/" },
-                    canonical
+                    canonical,
+                    if canonical.ends_with("/") { "" } else { "/" }
                 ),
                 ContentType::Html,
             );

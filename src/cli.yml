@@ -29,3 +29,7 @@ args:
       help: Inline styles that are on the same domain as your site
       long: inline-styles
       multiple: false
+  - minify_html:
+      help: Minify the html files
+      long: minify
+      multiple: false
