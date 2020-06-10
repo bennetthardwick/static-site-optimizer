@@ -19,6 +19,7 @@ pub(crate) fn fixup_amp_html(
     canonical: &str,
     url_base: &str,
     path_base: &str,
+    gtag_snippet: &Option<String>,
 ) -> Result<String, Box<dyn std::error::Error>> {
     let mut output = vec![];
 
@@ -124,6 +125,18 @@ pub(crate) fn fixup_amp_html(
                         &format!("<style amp-custom>{}</style>", &styles.borrow()),
                         ContentType::Html,
                     );
+
+                    if gtag_snippet.is_some() {
+                        el.append(r#"<script async custom-element="amp-analytics" src="https://cdn.ampproject.org/v0/amp-analytics-0.1.js"></script>"#, ContentType::Html);
+                    }
+
+                    Ok(())
+                }),
+                element!("body", |el| {
+                    if let Some(snippet) = gtag_snippet {
+                        el.append(&snippet, ContentType::Html);
+                    }
+
                     Ok(())
                 }),
             ],
