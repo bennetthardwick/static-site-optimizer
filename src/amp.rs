@@ -19,6 +19,7 @@ pub(crate) fn fixup_amp_html(
     canonical: &str,
     url_base: &str,
     path_base: &str,
+    gtag_snippet: &Option<String>,
 ) -> Result<String, Box<dyn std::error::Error>> {
     let mut output = vec![];
 
@@ -124,6 +125,11 @@ pub(crate) fn fixup_amp_html(
                         &format!("<style amp-custom>{}</style>", &styles.borrow()),
                         ContentType::Html,
                     );
+
+                    if let Some(snippet) = gtag_snippet {
+                        el.append(&snippet, ContentType::Html);
+                    }
+
                     Ok(())
                 }),
             ],

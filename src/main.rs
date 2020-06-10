@@ -50,6 +50,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let is_amp = matches.is_present("amp");
     let should_minify = matches.is_present("minify_html");
 
+    let gtag_id = matches.value_of("gtag_id").map(|id| format!(r#"
+        <script async custom-element="amp-analytics" src="https://cdn.ampproject.org/v0/amp-analytics-0.1.js"></script>
+        <amp-analytics type="gtag" data-credentials="include">
+            <script type="application/json">
+            {{
+              "vars" : {{
+                "gtag_id": "{gtag}",
+                "config" : {{
+                  "{gtag}": {{ "groups": "default" }}
+                }}
+              }}
+            }}
+            </script>
+        </amp-analytics>
+    "#, gtag = id));
+
     let minify_fn: &dyn Fn(String) -> Result<String, Box<dyn std::error::Error>> = if should_minify
     {
         &minify_html
@@ -136,6 +152,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                         &canonical,
                                         &base,
                                         &input.to_str().unwrap(),
+                                        &gtag_id,
                                     )?,
                                     original::fixup_original_html(
                                         &file,

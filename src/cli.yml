@@ -33,3 +33,8 @@ args:
       help: Minify the html files
       long: minify
       multiple: false
+  - gtag_id:
+      help: GTAG measurement id
+      long: gtag
+      takes_value: true
+      multiple: false
